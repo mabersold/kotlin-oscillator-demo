@@ -5,7 +5,6 @@ import java.nio.ByteBuffer
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.SourceDataLine
-import kotlin.math.sign
 
 class AudioPlayer(private val oscillator: Oscillator) {
     companion object {
@@ -14,12 +13,8 @@ class AudioPlayer(private val oscillator: Oscillator) {
         private const val SAMPLE_SIZE = 2
     }
 
-    init {
-
-    }
-
     fun playAudio() {
-        playAudio(428, 64)
+        playAudio(428, 128)
     }
 
     private fun playAudio(frequency: Int, volume: Short = 128, panningPosition: Short = 64) {
@@ -39,17 +34,8 @@ class AudioPlayer(private val oscillator: Oscillator) {
 
             for (i in currentSample until (currentSample + samplesInThisPass)) {
                 val signal = oscillator.getSignal(i, amplitude, frequency.toDouble(), SAMPLE_RATE.toDouble())
-//                if (signal.compareTo(0) == 0) println("signal is zero")
-
                 putSignal(oscillatorBuffer, signal, panningPosition)
             }
-
-            //first period is from 0 to about 103/104
-            //there are 44100 samples per second
-            //428 = number of periods per second
-            //duration of one period is 0.00233 seconds
-            //Yes, if you divide 44100 by 428 you get about 103.03
-            //a single sample
 
             audioLine.write(oscillatorBuffer.array(), 0, oscillatorBuffer.position())
             currentSample += samplesInThisPass
