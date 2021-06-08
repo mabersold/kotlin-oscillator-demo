@@ -5,6 +5,6 @@ abstract class Oscillator {
 
     protected fun getXValue(position: Int, frequency: Double, sampleRate: Double): Double {
         val periodLength = (sampleRate / frequency).toInt()
-        return (position % periodLength) * frequency / sampleRate
+        return (position % periodLength) / periodLength.toDouble()
     }
 }
