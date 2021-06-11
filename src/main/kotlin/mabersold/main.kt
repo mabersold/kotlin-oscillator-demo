@@ -3,14 +3,7 @@ import oscillator.SineWaveOscillator
 import oscillator.SquareWaveOscillator
 import oscillator.TriangleWaveOscillator
 import player.AudioPlayer
-import player.Note.A4
-import player.Note.B4
-import player.Note.C4
-import player.Note.C5
-import player.Note.D4
-import player.Note.E4
-import player.Note.F4
-import player.Note.G4
+import player.Note.*
 
 fun main(args: Array<String>) {
     println("Hello World!")
