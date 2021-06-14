@@ -28,10 +28,11 @@ class AudioPlayer(private val oscillator: Oscillator) {
         this.audioLine.close()
     }
 
-    fun playNote(note: Note, volume: Short, panningPosition: Short, duration: Int, decayInMilliseconds: Int) {
+    fun playNote(note: Note, volume: Short, panningPosition: Short, durationInMilliseconds: Int, decayInMilliseconds: Int) {
         val oscillatorBuffer = ByteBuffer.allocate(audioLine.bufferSize)
         var currentSample = 0
 
+        val duration = (SAMPLE_RATE * (durationInMilliseconds / 1000.0)).roundToInt()
         val decay = (SAMPLE_RATE * (decayInMilliseconds / 1000.0)).roundToInt()
         val maxAmplitude = getMaxAmplitude(volume)
 
