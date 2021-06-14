@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
         sineWavePlayer.setUpAudio()
 
         for (i in listOf(C4, D4, E4, F4, G4, A4, B4, C5)) {
-            sineWavePlayer.playNote(i, 128, 64, 22050)
+            sineWavePlayer.playNote(i, 128, 64, 22050, 300)
         }
     } finally {
         sineWavePlayer.tearDownAudio()
