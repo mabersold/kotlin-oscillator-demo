@@ -4,9 +4,16 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 abstract class Oscillator {
-    abstract fun getSignal(position: Int, amplitude: Short, frequency: Double, sampleRate: Double): Short
+    var position = 0
+        protected set
 
-    protected fun getXValue(position: Int, frequency: Double, sampleRate: Double): Double {
+    fun resetPosition() {
+        this.position = 0
+    }
+
+    abstract fun getSignal(frequency: Double, sampleRate: Double): Double
+
+    protected fun getXValue(frequency: Double, sampleRate: Double): Double {
         val periodLength = (sampleRate / frequency).toInt()
         return (position % periodLength) / periodLength.toDouble()
     }

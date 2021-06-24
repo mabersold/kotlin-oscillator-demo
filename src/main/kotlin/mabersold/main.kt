@@ -1,25 +1,48 @@
-import oscillator.SawtoothWaveOscillator
 import oscillator.SineWaveOscillator
-import oscillator.SquareWaveOscillator
-import oscillator.TriangleWaveOscillator
+import pcm.NoteSignalGenerator
 import player.AudioPlayer
-import player.Note.*
+import player.Pitch.*
+import song.Instrument
+import song.Note
+import song.Phrase
+import song.Song
 
+/*
+ * Command line args (for now)
+ *
+ * 1: Play a single note with playSignal
+ * 2: Play a song using playSong
+ */
 fun main(args: Array<String>) {
-    println("Hello World!")
-
-    val sineWavePlayer = AudioPlayer(SineWaveOscillator())
-    val sawPlayer = AudioPlayer(SawtoothWaveOscillator())
-    val squarePlayer = AudioPlayer(SquareWaveOscillator())
-    val triangleWavePlayer = AudioPlayer(TriangleWaveOscillator())
-
-    try {
-        sineWavePlayer.setUpAudio()
-
-        for (i in listOf(C4, D4, E4, F4, G4, A4, B4, C5)) {
-            sineWavePlayer.playNote(i, 128, 64, 500, 300)
-        }
-    } finally {
-        sineWavePlayer.tearDownAudio()
+    when(getArg(args)) {
+        "1" -> playSignal()
+        "2" -> playSong()
+        else -> playSong()
     }
+}
+
+private fun getArg(args: Array<String>): String = if (args.isEmpty()) "2" else args[0]
+
+private fun playSignal() {
+    val noteSignalGenerator = NoteSignalGenerator()
+    val signals = noteSignalGenerator.generateSamples(Note(C4, 128, 64), SineWaveOscillator(), 300)
+    val player = AudioPlayer()
+    player.playSignal(signals)
+}
+
+private fun playSong() {
+    val phrase = Phrase(4)
+    phrase.insertNote(0, Note(C4, 128, 0))
+    phrase.insertNote(2, Note(D4, 128, 18))
+    phrase.insertNote(4, Note(E4, 128, 36))
+    phrase.insertNote(6, Note(F4, 128, 54))
+    phrase.insertNote(8, Note(G4, 128, 72))
+    phrase.insertNote(10, Note(A4, 128, 90))
+    phrase.insertNote(12, Note(B4, 128, 108))
+    phrase.insertNote(14, Note(C5, 128, 128))
+    val instrument = Instrument(SineWaveOscillator(), phrase, 300)
+    val song = Song(instrument, 80)
+    val audioPlayer = AudioPlayer()
+
+    audioPlayer.playSong(song)
 }

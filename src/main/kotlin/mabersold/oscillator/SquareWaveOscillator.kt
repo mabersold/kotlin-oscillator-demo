@@ -1,8 +1,9 @@
 package oscillator
 
 class SquareWaveOscillator(private val pulseWidth: Double = 0.5) : Oscillator() {
-    override fun getSignal(position: Int, amplitude: Short, frequency: Double, sampleRate: Double): Short {
-        val yValue = if (getXValue(position, frequency, sampleRate) < pulseWidth) 1 else -1
-        return (amplitude * yValue).toShort()
+    override fun getSignal(frequency: Double, sampleRate: Double): Double {
+        val xValue = getXValue(frequency, sampleRate)
+        position++
+        return if (xValue < pulseWidth) 1.0 else -1.0
     }
 }

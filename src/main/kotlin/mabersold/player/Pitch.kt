@@ -1,6 +1,6 @@
 package player
 
-enum class Note(val frequency: Double) {
+enum class Pitch(val frequency: Double) {
     A0(27.5),
     ASH0(29.14),
     B0(30.87),

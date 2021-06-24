@@ -1,78 +1,58 @@
 package player
 
-import oscillator.Oscillator
+import NUMBER_OF_CHANNELS
+import SAMPLE_RATE
+import SAMPLE_SIZE_IN_BITS
+import song.Song
 import java.nio.ByteBuffer
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.SourceDataLine
-import kotlin.math.roundToInt
 
-class AudioPlayer(private val oscillator: Oscillator) {
+class AudioPlayer {
     private lateinit var audioLine: SourceDataLine
 
-    companion object {
-        private const val VOLUME_MULTIPLE: Short = 128
-        private const val MAX_AMPLITUDE: Short = 8192
-        private const val SAMPLE_RATE = 44100
-        private const val SAMPLE_SIZE = 2
-    }
-
-    fun setUpAudio() {
-        this.audioLine = AudioSystem.getSourceDataLine(AudioFormat(SAMPLE_RATE.toFloat(), 16, 2, true, true))
+    private fun setUpAudio() {
+        this.audioLine = AudioSystem.getSourceDataLine(AudioFormat(SAMPLE_RATE.toFloat(), SAMPLE_SIZE_IN_BITS, NUMBER_OF_CHANNELS, true, true))
         this.audioLine.open()
         this.audioLine.start()
     }
 
-    fun tearDownAudio() {
+    private fun tearDownAudio() {
         this.audioLine.drain()
         this.audioLine.close()
     }
 
-    fun playNote(note: Note, volume: Short, panningPosition: Short, durationInMilliseconds: Int, decayInMilliseconds: Int) {
-        val oscillatorBuffer = ByteBuffer.allocate(audioLine.bufferSize)
-        var currentSample = 0
+    fun playSignal(signals: ShortArray) {
+        setUpAudio()
+        val buffer = ByteBuffer.allocate(signals.size)
 
-        val duration = (SAMPLE_RATE * (durationInMilliseconds / 1000.0)).roundToInt()
-        val decay = (SAMPLE_RATE * (decayInMilliseconds / 1000.0)).roundToInt()
-        val maxAmplitude = getMaxAmplitude(volume)
-
-        while (currentSample < duration) {
-            oscillatorBuffer.clear()
-            val samplesInThisPass = audioLine.available() / SAMPLE_SIZE / 2
-
-            for (i in currentSample until (currentSample + samplesInThisPass)) {
-                val signal = oscillator.getSignal(
-                    i,
-                    getAmplitude(maxAmplitude, decay, i),
-                    note.frequency,
-                    SAMPLE_RATE.toDouble()
-                )
-                putSignal(oscillatorBuffer, signal, panningPosition)
+        for (sample in signals) {
+            if (!buffer.hasRemaining()) {
+                audioLine.write(buffer.array(), 0, buffer.position())
+                buffer.clear()
             }
 
-            audioLine.write(oscillatorBuffer.array(), 0, oscillatorBuffer.position())
-            currentSample += samplesInThisPass
-
-            while (audioLine.bufferSize / 2 < audioLine.available()) {
-                Thread.sleep(1)
-            }
+            buffer.putShort(sample)
         }
+
+        audioLine.write(buffer.array(), 0, buffer.position())
+        tearDownAudio()
     }
 
-    private fun putSignal(buffer: ByteBuffer, signal: Short, panningPosition: Short) {
-        val rightPanning = getRightPanning(panningPosition)
-        val leftSignal = (signal * (1 - rightPanning)).toInt().toShort()
-        val rightSignal = (signal - leftSignal).toShort()
+    fun playSong(song: Song) {
+        setUpAudio()
 
-        buffer.putShort(leftSignal).putShort(rightSignal)
+        val buffer = ByteBuffer.allocate(audioLine.bufferSize)
+
+        while (song.songStillActive()) {
+            val audioData = song.instrument.getNextPositionAudioData(song.bpm)
+            for (sample in audioData) {
+                buffer.putShort(sample)
+            }
+            audioLine.write(buffer.array(), 0, buffer.position())
+            buffer.clear()
+        }
+        tearDownAudio()
     }
-
-    private fun getRightPanning(panningPosition: Short): Float =
-        panningPosition / 128F
-
-    private fun getMaxAmplitude(volume: Short): Short =
-        if (volume * VOLUME_MULTIPLE > MAX_AMPLITUDE) MAX_AMPLITUDE else (volume * VOLUME_MULTIPLE).toShort()
-
-    private fun getAmplitude(amplitude: Short, decay: Int, position: Int): Short =
-        (amplitude / decay.toDouble() * 0.coerceAtLeast((decay - position))).roundToInt().toShort()
 }
