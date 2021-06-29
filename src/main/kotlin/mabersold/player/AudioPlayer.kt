@@ -3,6 +3,7 @@ package player
 import NUMBER_OF_CHANNELS
 import SAMPLE_RATE
 import SAMPLE_SIZE_IN_BITS
+import pcm.InstrumentAudioGenerator
 import song.Song
 import java.nio.ByteBuffer
 import javax.sound.sampled.AudioFormat
@@ -44,9 +45,10 @@ class AudioPlayer {
         setUpAudio()
 
         val buffer = ByteBuffer.allocate(audioLine.bufferSize)
+        val generator = InstrumentAudioGenerator(song.instrument)
 
-        while (song.songStillActive()) {
-            val audioData = song.instrument.getNextPositionAudioData(song.bpm)
+        while (generator.songStillActive()) {
+            val audioData = generator.generateSamplesForNextPosition(song.bpm)
             for (sample in audioData) {
                 buffer.putShort(sample)
             }

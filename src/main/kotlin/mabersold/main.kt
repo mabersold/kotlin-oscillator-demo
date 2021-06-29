@@ -1,5 +1,5 @@
 import oscillator.SineWaveOscillator
-import pcm.NoteSignalGenerator
+import pcm.NoteAudioGenerator
 import player.AudioPlayer
 import player.Pitch.*
 import song.Instrument
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 private fun getArg(args: Array<String>): String = if (args.isEmpty()) "2" else args[0]
 
 private fun playSignal() {
-    val noteSignalGenerator = NoteSignalGenerator()
+    val noteSignalGenerator = NoteAudioGenerator()
     val signals = noteSignalGenerator.generateSamples(Note(C4, 128, 64), SineWaveOscillator(), 300)
     val player = AudioPlayer()
     player.playSignal(signals)

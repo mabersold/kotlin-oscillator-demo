@@ -8,7 +8,7 @@ import oscillator.Oscillator
 import song.Note
 import kotlin.math.roundToInt
 
-class NoteSignalGenerator {
+class NoteAudioGenerator {
     /*
      * This method simply generates the complete sample array for a given note, with the specified oscillator and decay.
      *
