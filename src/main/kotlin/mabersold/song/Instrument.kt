@@ -2,4 +2,4 @@ package song
 
 import oscillator.Oscillator
 
-class Instrument(val oscillator: Oscillator, val phrase: Phrase, val decay: Int)
+data class Instrument(val oscillator: Oscillator, val phrases: List<Phrase>, val sequence: List<Int>, val decay: Int)

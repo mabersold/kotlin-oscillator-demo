@@ -11,11 +11,13 @@ import kotlin.math.roundToInt
 
 class InstrumentAudioGenerator(private val instrument: Instrument) {
     private var activeNote: Note? = null
-    private var position: Int = 0
+    private var sequencePosition: Int = 0
+    private var phrasePosition: Int = 0
 
     fun generateSamplesForNextPosition(bpm: Int): ShortArray {
-        val note = instrument.phrase.getNote(position)
-        activeNote = note ?: activeNote
+        val currentPhraseNumber = instrument.sequence[sequencePosition]
+        val noteAtCurrentPosition = instrument.phrases[currentPhraseNumber].getNote(phrasePosition)
+        activeNote = noteAtCurrentPosition ?: activeNote
 
         val secondsPerBeat = bpm.toDouble().pow(-1) * 60
         val samplesPerPosition = (SAMPLE_RATE * secondsPerBeat / 6).roundToInt()
@@ -25,7 +27,7 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
             return ShortArray(samplesPerPosition * NUMBER_OF_CHANNELS) { 0 }
         }
 
-        if (note != null) {
+        if (noteAtCurrentPosition != null) {
             instrument.oscillator.resetPosition()
         }
 
@@ -44,11 +46,16 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
             returnArray[i + 1] = rightSignal
         }
 
-        position++
+        phrasePosition++
+        //if phrase position is outside of bounds, advance to the next part of the sequence
+        if (phrasePosition >= instrument.phrases[currentPhraseNumber].length * 6) {
+            sequencePosition++
+            phrasePosition = 0
+        }
         return returnArray
     }
 
-    fun songStillActive(): Boolean = instrument.phrase.length * 6 > position
+    fun songStillActive(): Boolean = instrument.sequence.size > sequencePosition
 
     private fun getNoteAmplitude(volume: Short): Short = if (volume * VOLUME_MULTIPLE > MAX_AMPLITUDE) MAX_AMPLITUDE else (volume * VOLUME_MULTIPLE).toShort()
     private fun getDecayedAmplitude(amplitude: Short, decay: Int, position: Int): Short = (amplitude / decay.toDouble() * 0.coerceAtLeast((decay - position))).roundToInt().toShort()
