@@ -4,8 +4,13 @@ import MAX_AMPLITUDE
 import NUMBER_OF_CHANNELS
 import SAMPLE_RATE
 import VOLUME_MULTIPLE
+import oscillator.SawtoothWaveOscillator
+import oscillator.SineWaveOscillator
+import oscillator.SquareWaveOscillator
+import oscillator.TriangleWaveOscillator
 import song.Instrument
 import song.Note
+import song.OscillatorType
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -13,6 +18,12 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
     private var activeNote: Note? = null
     private var sequencePosition: Int = 0
     private var phrasePosition: Int = 0
+    private val oscillator = when(instrument.oscillatorType) {
+        OscillatorType.SINE -> SineWaveOscillator()
+        OscillatorType.TRIANGLE -> TriangleWaveOscillator()
+        OscillatorType.SAW -> SawtoothWaveOscillator()
+        OscillatorType.SQUARE -> SquareWaveOscillator(instrument.pulseWidth)
+    }
 
     fun generateSamplesForNextPosition(bpm: Int): ShortArray {
         val currentPhraseNumber = instrument.sequence[sequencePosition]
@@ -28,15 +39,15 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
         }
 
         if (noteAtCurrentPosition != null) {
-            instrument.oscillator.resetPosition()
+            oscillator.resetPosition()
         }
 
         val noteAmplitude = getNoteAmplitude(activeNote?.volume!!)
         val returnArray = ShortArray(samplesPerPosition * NUMBER_OF_CHANNELS)
 
         for (i in returnArray.indices step 2) {
-            val signal = instrument.oscillator.getSignal(activeNote!!.pitch.frequency, SAMPLE_RATE.toDouble())
-            val amplifiedSignal = (signal * getDecayedAmplitude(noteAmplitude!!, decayInSamples, instrument.oscillator.position)).roundToInt().toShort()
+            val signal = oscillator.getSignal(activeNote!!.pitch.frequency, SAMPLE_RATE.toDouble())
+            val amplifiedSignal = (signal * getDecayedAmplitude(noteAmplitude!!, decayInSamples, oscillator.position)).roundToInt().toShort()
 
             val rightPanning = activeNote!!.panning / 128F
             val leftSignal = (amplifiedSignal * (1 - rightPanning)).roundToInt().toShort()
