@@ -1,3 +1,3 @@
 package song
 
-data class Song(val instrument: Instrument, val bpm: Int)
+data class Song(val instruments: List<Instrument>, val bpm: Int)

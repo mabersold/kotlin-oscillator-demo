@@ -160,7 +160,7 @@ private fun playSong() {
         listOf(0, 1, 1, 2, 3, 2, 4, 2, 3, 2, 4, 5, 0, 1, 1, 6, 7, 6, 8, 6, 7, 6, 8, 5, 0),
         228
     )
-    val song = Song(instrument, 192)
+    val song = Song(listOf(instrument), 192)
     val audioPlayer = AudioPlayer()
 
     audioPlayer.playSong(song)

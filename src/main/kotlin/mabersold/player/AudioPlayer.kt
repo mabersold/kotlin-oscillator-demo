@@ -45,7 +45,7 @@ class AudioPlayer {
         setUpAudio()
 
         val buffer = ByteBuffer.allocate(audioLine.bufferSize)
-        val generator = InstrumentAudioGenerator(song.instrument)
+        val generator = InstrumentAudioGenerator(song.instruments[0])
 
         while (generator.songStillActive()) {
             val audioData = generator.generateSamplesForNextPosition(song.bpm)
