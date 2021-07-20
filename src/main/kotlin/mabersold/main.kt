@@ -33,6 +33,24 @@ private fun playSignal() {
 }
 
 private fun playSong() {
+    val audioPlayer = AudioPlayer()
+    audioPlayer.playSong(generateSong())
+}
+
+private fun generateSong(): Song {
+    return Song(listOf(generateMelodyInstrument()), 192)
+}
+
+private fun generateMelodyInstrument(): Instrument {
+    return Instrument(
+        OscillatorType.SQUARE,
+        generateMelodyPhrases(),
+        listOf(0, 1, 1, 2, 3, 2, 4, 2, 3, 2, 4, 5, 0, 1, 1, 6, 7, 6, 8, 6, 7, 6, 8, 5, 0),
+        228
+    )
+}
+
+private fun generateMelodyPhrases(): List<Phrase> {
     val phrase0 = Phrase(8)
     phrase0.insertNote(0, Note(E5))
     phrase0.insertNote(3, Note(E5))
@@ -154,14 +172,5 @@ private fun playSong() {
     phrase8.insertNote(20, Note(D5))
     phrase8.insertNote(24, Note(C5))
 
-    val instrument = Instrument(
-        OscillatorType.SQUARE,
-        listOf(phrase0, phrase1, phrase2, phrase3, phrase4, phrase5, phrase6, phrase7, phrase8),
-        listOf(0, 1, 1, 2, 3, 2, 4, 2, 3, 2, 4, 5, 0, 1, 1, 6, 7, 6, 8, 6, 7, 6, 8, 5, 0),
-        228
-    )
-    val song = Song(listOf(instrument), 192)
-    val audioPlayer = AudioPlayer()
-
-    audioPlayer.playSong(song)
+    return listOf(phrase0, phrase1, phrase2, phrase3, phrase4, phrase5, phrase6, phrase7, phrase8)
 }
