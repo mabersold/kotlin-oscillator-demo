@@ -25,29 +25,42 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
         OscillatorType.SQUARE -> SquareWaveOscillator(instrument.pulseWidth)
     }
 
+    private fun getSecondsPerBeat(bpm: Int) =
+        bpm.toDouble().pow(-1) * 60
+
+    private fun getSamplesPerPosition(secondsPerBeat: Double) =
+        (SAMPLE_RATE * secondsPerBeat / 6).roundToInt()
+
+    fun getLengthOfReturnArray(bpm: Int) =
+        getSamplesPerPosition(getSecondsPerBeat(bpm)) * NUMBER_OF_CHANNELS
+
     fun generateSamplesForNextPosition(bpm: Int): ShortArray {
+        val returnArrayLength = getLengthOfReturnArray(bpm)
+
+        if (sequencePosition >= instrument.sequence.size) {
+            return ShortArray(returnArrayLength) { 0 }
+        }
+
         val currentPhraseNumber = instrument.sequence[sequencePosition]
         val noteAtCurrentPosition = instrument.phrases[currentPhraseNumber].getNote(phrasePosition)
         activeNote = noteAtCurrentPosition ?: activeNote
 
-        val secondsPerBeat = bpm.toDouble().pow(-1) * 60
-        val samplesPerPosition = (SAMPLE_RATE * secondsPerBeat / 6).roundToInt()
-        val decayInSamples = (SAMPLE_RATE * (instrument.decay / 1000.0)).roundToInt()
-
         if (activeNote == null) {
-            return ShortArray(samplesPerPosition * NUMBER_OF_CHANNELS) { 0 }
+            return ShortArray(returnArrayLength) { 0 }
         }
+
+        val decayInSamples = (SAMPLE_RATE * (instrument.decay / 1000.0)).roundToInt()
 
         if (noteAtCurrentPosition != null) {
             oscillator.resetPosition()
         }
 
         val noteAmplitude = getNoteAmplitude(activeNote?.volume!!)
-        val returnArray = ShortArray(samplesPerPosition * NUMBER_OF_CHANNELS)
+        val returnArray = ShortArray(returnArrayLength)
 
         for (i in returnArray.indices step 2) {
             val signal = oscillator.getSignal(activeNote!!.pitch.frequency, SAMPLE_RATE.toDouble())
-            val amplifiedSignal = (signal * getDecayedAmplitude(noteAmplitude!!, decayInSamples, oscillator.position)).roundToInt().toShort()
+            val amplifiedSignal = (signal * getDecayedAmplitude(noteAmplitude, decayInSamples, oscillator.position)).roundToInt().toShort()
 
             val rightPanning = activeNote!!.panning / 128F
             val leftSignal = (amplifiedSignal * (1 - rightPanning)).roundToInt().toShort()
@@ -66,7 +79,7 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
         return returnArray
     }
 
-    fun songStillActive(): Boolean = instrument.sequence.size > sequencePosition
+    fun instrumentStillActive(): Boolean = instrument.sequence.size > sequencePosition
 
     private fun getNoteAmplitude(volume: Short): Short = if (volume * VOLUME_MULTIPLE > MAX_AMPLITUDE) MAX_AMPLITUDE else (volume * VOLUME_MULTIPLE).toShort()
     private fun getDecayedAmplitude(amplitude: Short, decay: Int, position: Int): Short = (amplitude / decay.toDouble() * 0.coerceAtLeast((decay - position))).roundToInt().toShort()

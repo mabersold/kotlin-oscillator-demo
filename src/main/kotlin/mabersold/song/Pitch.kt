@@ -1,4 +1,4 @@
-package player
+package song
 
 enum class Pitch(val frequency: Double) {
     A0(27.5),
