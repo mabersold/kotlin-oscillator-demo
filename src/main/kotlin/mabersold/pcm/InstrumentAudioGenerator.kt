@@ -4,6 +4,7 @@ import MAX_AMPLITUDE
 import NUMBER_OF_CHANNELS
 import SAMPLE_RATE
 import VOLUME_MULTIPLE
+import oscillator.NoiseOscillator
 import oscillator.SawtoothWaveOscillator
 import oscillator.SineWaveOscillator
 import oscillator.SquareWaveOscillator
@@ -23,6 +24,7 @@ class InstrumentAudioGenerator(private val instrument: Instrument) {
         OscillatorType.TRIANGLE -> TriangleWaveOscillator()
         OscillatorType.SAW -> SawtoothWaveOscillator()
         OscillatorType.SQUARE -> SquareWaveOscillator(instrument.pulseWidth)
+        OscillatorType.NOISE -> NoiseOscillator()
     }
 
     private fun getSecondsPerBeat(bpm: Int) =

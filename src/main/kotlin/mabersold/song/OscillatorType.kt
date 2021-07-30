@@ -4,5 +4,6 @@ enum class OscillatorType {
     SINE,
     TRIANGLE,
     SAW,
-    SQUARE
+    SQUARE,
+    NOISE
 }
