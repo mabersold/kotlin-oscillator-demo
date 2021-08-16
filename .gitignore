@@ -4,3 +4,5 @@ lib/
 .idea/
 *.iml
 src/*.iml
+.gradle/
+build/
